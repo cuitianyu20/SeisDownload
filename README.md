@@ -2,11 +2,8 @@
 ![LICENSE](https://img.shields.io/badge/license-MIT-green)
 ![Author](https://img.shields.io/badge/Author-TianyuCui-blue.svg)
 
-:clap:
 
 Auto-download mass seismic event data using Obspy.
-
-Quickly download seismic event waveform data based on obspy-MassDownloader.
 
 Functions:star2::
 1. You can choose event domain, station domain and perform the epicentral distance restriction.

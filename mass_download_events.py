@@ -9,8 +9,6 @@ import datetime
 import numpy as np
 import pandas as pd
 from obspy.io import sac
-import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
 from obspy.clients.fdsn import Client      
 from obspy.geodetics import gps2dist_azimuth
 from obspy import read, UTCDateTime, read_inventory

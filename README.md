@@ -2,21 +2,25 @@
 ![LICENSE](https://img.shields.io/badge/license-MIT-green)
 ![Author](https://img.shields.io/badge/Author-TianyuCui-blue.svg)
 
-Auto-download mass seismic event data using Obspy
-    *Quickly download seismic event waveform data based on obspy-MassDownloader.
-    *Functions:star2::
+:clap:
+
+Auto-download mass seismic event data using Obspy.
+
+Quickly download seismic event waveform data based on obspy-MassDownloader.
+
+Functions:star2::
 1. You can choose event domain, station domain and perform the epicentral distance restriction.
 2. Convert Miniseed format file to SAC format file
 3. Automatically remove instrument responce and conventional process (detrend, demean and taper).
 
 ***
 ## Dependencies
-##### Tested well:
+#### Tested well:
 1. Obspy1.4.0 
 2. Numpy 1.25.0,Pandas 1.4.2
 ***
 ## Input Parameters
-##### Details in codes
+#### Details in codes
 ```Python
     arrayname: "IU" or "II" or "TA" or "TW" or "IC" or "IU,II,TA,TW,IC" or "*"
     station_name: "ANMO" or "TA01" or "ANMO,TA01" or "*"

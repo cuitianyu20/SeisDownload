@@ -26,7 +26,7 @@ Functions:star2::
         domain type:1 (RectangularDomain) sta_range = [sta_lat_min, sta_lat_max, sta_lon_min, sta_lon_max] in degree
                        if limit_distance=True, add distance restriction to the Rectangular domain
                       (RestrictionDomain) [min_dis, max_dis] in degree 
-        domain type:2 (CircularDomain) sta_range = [minradius, maxradius] in degree 
+        domain type:2 (CircularDomain) sta_range = [minradius, maxradius] in degree  (lon: 0 degree ~ 360 degree)
                                        mid points: [ref_lat, ref_lon] in degree
         domain type:3 (GlobalDomain) []
     evt_range: [evt_lat_min, evt_lat_max, evt_lon_min, evt_lon_max] in degree

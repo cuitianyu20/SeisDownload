@@ -51,6 +51,10 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
                                maxlatitude=evt_maxlat, minlongitude=-180, maxlongitude=evt_maxlon-360,
                                minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
         events = events + events1
+    else:
+        events = client.get_events(starttime=starttime, endtime=endtime, mindepth=evt_min_dep, minlatitude=evt_minlat,
+                                   maxlatitude=evt_maxlat, minlongitude=evt_minlon, maxlongitude=evt_maxlon,
+                                   minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
     print("Found %s event(s):" % len(events))
     print(events)
     # store data to dataframe
@@ -107,6 +111,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
                 # add distance restriction to the Rectangular domain
                 domain_restriction = CircularDomain(latitude=event_lat, longitude=event_lon,
                                                     minradius=min_dis, maxradius=max_dis)
+            domain = domain and domain_restriction
         elif domain_type == 2:
             # Global domain.
             domain = GlobalDomain()
@@ -140,13 +145,8 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
             # Download waveform data from all cilents!!!
             print('Downloading waveform data, continue...')
             mdl = MassDownloader(debug=False, configure_logging=False) 
-            if limit_distance:
-                # Add distance restriction based on the Rectangular domain           
-                mdl.download((domain and domain_restriction), restrictions, mseed_storage=get_mseed_storage, threads_per_client=3,
-                            stationxml_storage="%s/{network}.{station}.xml" % (waveform_station_dir) )
-            else:
-                mdl.download(domain, restrictions, mseed_storage=get_mseed_storage, threads_per_client=3,
-                        stationxml_storage="%s/{network}.{station}.xml" % (waveform_station_dir) )
+            mdl.download(domain, restrictions, mseed_storage=get_mseed_storage, threads_per_client=3,
+                    stationxml_storage="%s/{network}.{station}.xml" % (waveform_station_dir) )
         except lxml.etree.XMLSyntaxError:
             print('Skipping invalid XML from URL, something have been wrong in one or more stationxml!')
             pass
@@ -264,11 +264,11 @@ def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat,
                     # Delete miniseed files if miniseed convert to sac successfully
                     if delete_mseed and os.path.exists('%s/%s.%s.%s.%s.sac' % (unremove_file, event_date, net, sta, cha)):
                         os.system('rm %s/*%s.%s.%s.mseed' % (mseed_dir, net, sta, cha))
-                try:
-                    os.rmdir(mseed_dir)
-                    print(f"The folder:'{mseed_dir}' has been deleted successfully!")
-                except OSError as e:
-                    print("The folder %s : %s" % (mseed_dir, e.strerror))
+        try:
+            os.rmdir(mseed_dir)
+            print(f"The folder:'{mseed_dir}' has been deleted successfully!")
+        except OSError as e:
+            print("The folder %s : %s" % (mseed_dir, e.strerror))
     except:
         pass
 

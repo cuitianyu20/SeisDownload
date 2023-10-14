@@ -3,7 +3,6 @@
 
 import os
 import lxml
-import obspy
 import shutil
 import datetime
 import numpy as np

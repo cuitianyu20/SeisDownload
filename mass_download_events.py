@@ -83,7 +83,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
     waveform_station_dir = os.path.join(data_dir, "station_inv")
     waveform_sac_dir = os.path.join(data_dir, "waveform_sac")
     # Download waveform data for each event from all cilents!!!
-    for event in events:
+    for index,event in enumerate(events):
         # Event information.
         event_mag = event.magnitudes[0].mag
         event_time = event.origins[0].time
@@ -95,7 +95,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
             event_time.minute, event_time.second)
         # Print the imformation of each event
         print("\n-----------------------------------------")
-        print("event,longitude,latitude,magnitude:", event_date, event.origins[0].longitude, 
+        print("event,longitude,latitude,magnitude (%s/%s):"%(index+1, len(events)), event_date, event.origins[0].longitude, 
               event.origins[0].latitude, event.magnitudes[0].mag)
         # Station data selection for different domain types.
         if domain_type == 0:

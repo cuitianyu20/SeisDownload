@@ -5,10 +5,11 @@ import os
 import lxml
 import shutil
 import datetime
+import warnings
 import numpy as np
 import pandas as pd
 from obspy.io import sac
-from obspy.clients.fdsn import Client      
+from obspy.clients.fdsn import Client
 from obspy.geodetics import gps2dist_azimuth
 from obspy import read, UTCDateTime, read_inventory
 from obspy.clients.fdsn.mass_downloader import (
@@ -27,8 +28,8 @@ Author: Tianyu Cui
 E-mail: tycuicn@gmail.com
 Date: 2023.10.04
 '''
-def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_range, ref_lat, ref_lon, evt_mag_range, evt_min_dep, 
-                      wave_len, channel, startdate, enddate, min_dis=0, max_dis=180, limit_distance=False, delete_mseed=True):
+def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_range, ref_lat, ref_lon, evt_mag_range, evt_min_dep, wave_len, 
+                      channel, startdate, enddate, min_dis=0, max_dis=180, limit_distance=False, delete_mseed=True, remove_response=True):
     # Module 1: Get event catalog from IRIS
     evt_minlat = evt_range[0]
     evt_maxlat = evt_range[1]
@@ -44,11 +45,11 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
     client = Client("IRIS")                        # IRIS Client
     if evt_maxlon > 180:
         events = client.get_events(starttime=starttime, endtime=endtime, mindepth=evt_min_dep, minlatitude=evt_minlat,
-                               maxlatitude=evt_maxlat, minlongitude=evt_minlon, maxlongitude=180,
-                               minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
+                                   maxlatitude=evt_maxlat, minlongitude=evt_minlon, maxlongitude=180,
+                                   minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
         events1 = client.get_events(starttime=starttime, endtime=endtime, mindepth=evt_min_dep, minlatitude=evt_minlat,
-                               maxlatitude=evt_maxlat, minlongitude=-180, maxlongitude=evt_maxlon-360,
-                               minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
+                                    maxlatitude=evt_maxlat, minlongitude=-180, maxlongitude=evt_maxlon-360,
+                                    minmagnitude=evt_minmag, maxmagnitude=evt_maxmag)
         events = events + events1
     else:
         events = client.get_events(starttime=starttime, endtime=endtime, mindepth=evt_min_dep, minlatitude=evt_minlat,
@@ -75,7 +76,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
     # save fig
     events.plot(projection="global", resolution="h", show=False,
                 outfile="events_map.png", method='cartopy')
-    
+
     # Module 2: Download waveform data by using MassDownloader
     # Define saved data directories
     data_dir = os.getcwd()
@@ -91,11 +92,11 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
         event_lon = event.origins[0].longitude
         event_dep = event.origins[0].depth
         event_date = '{:04d}-{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(
-            event_time.year, event_time.month, event_time.day, event_time.hour, 
+            event_time.year, event_time.month, event_time.day, event_time.hour,
             event_time.minute, event_time.second)
         # Print the imformation of each event
         print("\n-----------------------------------------")
-        print("event,longitude,latitude,magnitude (%s/%s):"%(index+1, len(events)), event_date, event.origins[0].longitude, 
+        print("event,longitude,latitude,magnitude (%s/%s):"%(index+1, len(events)), event_date, event.origins[0].longitude,
               event.origins[0].latitude, event.magnitudes[0].mag)
         # Station data selection for different domain types.
         if domain_type == 0:
@@ -105,7 +106,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
         elif domain_type == 1:
             # Rectangular domain around the epicenter.
             domain = RectangularDomain(minlatitude=sta_range[0], maxlatitude=sta_range[1],
-                                    minlongitude=sta_range[2], maxlongitude=sta_range[3])
+                                       minlongitude=sta_range[2], maxlongitude=sta_range[3])
             if limit_distance:
                 # add distance restriction to the Rectangular domain
                 domain_restriction = CircularDomain(latitude=event_lat, longitude=event_lon,
@@ -130,22 +131,23 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
             minimum_length=0.95,
             sanitize=False,
             minimum_interstation_distance_in_m=0,
-            # HH, BH, SH or EH channels. 
+            # HH, BH, SH or EH channels.
             channel_priorities=channel,
             # Location codes
             location_priorities=["*"])
         # Define the storage path of waveform data.
+
         def get_mseed_storage(network, station, location, channel, starttime, endtime):
             # change the format of time
             starttime = starttime.strftime("%Y-%m-%d-%H-%M-%S")
             sac_name = "%s.%s.%s.%s" % (starttime, network, station, channel)
-            return os.path.join("%s/%s" % (waveform_mseed_dir,event_date), "%s.mseed" % sac_name)
+            return os.path.join("%s/%s" % (waveform_mseed_dir, event_date), "%s.mseed" % sac_name)
         try:
             # Download waveform data from all cilents!!!
             print('Downloading waveform data, continue...')
-            mdl = MassDownloader(debug=False, configure_logging=False) 
+            mdl = MassDownloader(debug=False, configure_logging=False)
             mdl.download(domain, restrictions, mseed_storage=get_mseed_storage, threads_per_client=3,
-                    stationxml_storage="%s/{network}.{station}.xml" % (waveform_station_dir) )
+                         stationxml_storage="%s/{network}.{station}.xml" % (waveform_station_dir))
         except lxml.etree.XMLSyntaxError:
             print('Skipping invalid XML from URL, something have been wrong in one or more stationxml!')
             pass
@@ -155,8 +157,8 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
         mseed_files_exist = any(file.endswith(".mseed") for file in os.listdir(
             os.path.join(waveform_mseed_dir, event_date)))
         if mseed_files_exist:
-            miniseed2sac(waveform_mseed_dir, event_date, waveform_station_dir, waveform_sac_dir, event_lat, 
-                         event_lon, event_dep, event_mag, delete_mseed=delete_mseed)
+            miniseed2sac(waveform_mseed_dir, event_date, waveform_station_dir, waveform_sac_dir, event_lat,
+                         event_lon, event_dep, event_mag, delete_mseed=delete_mseed, remove_response=remove_response)
         else:
             print("\n!!!No miniseed waveform data for event-%s!!!\n" % event_date)
 
@@ -164,7 +166,7 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
 '''
 Add SAC header values to trace
 '''
-def mseed_to_sac_header(trace,header_info):
+def mseed_to_sac_header(trace, header_info):
     # set SAC header values
     sacz = sac.SACTrace.from_obspy_trace(trace)
     sacz.stlo = header_info['sta_lon']             # station longitude
@@ -183,15 +185,16 @@ def mseed_to_sac_header(trace,header_info):
     sacz.dist = header_info['dist']/1000           # distance in kilometers
     sacz.gcarc = header_info['dist']/111190        # distance in degree
     sacz.delta = header_info['delta']              # delta
-    sacz.o = 0                                     # set event origin time as reference time
+    # set event origin time as reference time
+    sacz.o = 0
     return sacz
 
 
 '''
 miniseed2sac: convert miniseed to sac and remove instrument response
 '''
-
-def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat, eve_lon, eve_dep, eve_mag, rotate_sac=False, delete_mseed=True):
+def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat, eve_lon, eve_dep, eve_mag, 
+                 rotate_sac=False, delete_mseed=True, remove_response=True):
     mseed_dir = os.path.join(waveform_mseed, event_date)
     sac_dir = os.path.join(waveform_sac, event_date)
     if not os.path.exists(waveform_sac):
@@ -208,61 +211,56 @@ def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat,
             sta = tr.stats.station
             cha = tr.stats.channel
             loc = tr.stats.location
-            station_inv = os.path.join(station_dir, '%s.%s.xml'%(net, sta))
+            station_inv = os.path.join(station_dir, '%s.%s.xml' % (net, sta))
             # get corresponding SAC header values from StationXML
             if not os.path.exists(station_inv):
                 current_date = datetime.date.today()
-                try:    
+                try:
+                    print("Downloading station inventory (net:%s, sta:%s)..." % (net,sta))
                     Client('IRIS').get_stations(starttime=UTCDateTime('1990-01-01'), endtime=UTCDateTime(current_date),
-                                        network=net, station=sta, channel=cha, location=loc, level='response',
-                                        filename=station_inv, format='xml')
+                                                network=net, station=sta, channel=cha, location=loc, level='response',
+                                                filename=station_inv, format='xml')
+                    if os.path.exists(station_inv):
+                        print("Download station inventory (net:%s, sta:%s) successfully!" % (net,sta))
                 except:
                     pass
             if os.path.exists(station_inv):
-                # read inventory and get station coordinates corresponding to the special channel
                 try:
-                    remove_instrument = True
                     tr_inv = read_inventory(station_inv)
                     coordinates = tr_inv.get_coordinates(net + '.' + sta + '.' + loc + '.' + cha)
                     sta_lon = coordinates['longitude']
                     sta_lat = coordinates['latitude']
                     sta_ele = coordinates['elevation']
                     # calculate the distance, azimuth and back azimuth
+                    warnings.filterwarnings("ignore", category=DeprecationWarning)
                     (dist, azi, baz) = gps2dist_azimuth(eve_lat, eve_lon, sta_lat, sta_lon)
                     # SAC header information
                     header_info = {'sta_lon': sta_lon, 'sta_lat': sta_lat, 'sta_ele': sta_ele, 'sta': sta, 'cha': cha,
-                                'net': net, 'loc': loc, 'eve_mag': eve_mag, 'eve_lon': eve_lon, 'eve_lat': eve_lat, 'eve_dep': eve_dep,
-                                'azi': azi, 'baz': baz, 'dist': dist, 'delta': tr.stats.delta}
+                                   'net': net, 'loc': loc, 'eve_mag': eve_mag, 'eve_lon': eve_lon, 'eve_lat': eve_lat, 'eve_dep': eve_dep,
+                                   'azi': azi, 'baz': baz, 'dist': dist, 'delta': tr.stats.delta}
                     # Remove instrument response
                     # Notice: instrument response removal by obspy differs with that by SAC software due to water_level !!!
                     tr.detrend("demean")
                     tr.detrend("linear")
                     pre_filt = [0.001, 0.002, 25, 30]
-                    # displacement, output unit is nm
-                    tr.remove_response(inventory=tr_inv, water_level=60, taper=True, 
+                    if remove_response:
+                        # displacement, output unit is nm
+                        tr.remove_response(inventory=tr_inv, water_level=60, taper=True,
                                         taper_fraction=0.00001, pre_filt=pre_filt, output="DISP")
-                    tr.data = tr.data * 1e9  # convert to nm
-                except Exception as e:
-                    remove_instrument = False
-                    print("!!!%s/%s.%s.%s.%s.sac read inventory failed!!!" % (sac_dir, event_date, net, sta, cha))
-                    continue
-                # rotate to ZNE, optional
-                if rotate_sac:
-                    tr.rotate(method="->ZNE", inventory=tr_inv)
-                sacz = mseed_to_sac_header(tr, header_info)
-                if remove_instrument:
+                        tr.data = tr.data * 1e9  # convert to nm
+                    # write SAC header values to trace
+                    sacz = mseed_to_sac_header(tr, header_info)
+                    # rotate to ZNE, optional
+                    if rotate_sac:
+                        tr.rotate(method="->ZNE", inventory=tr_inv)
+                    # write SAC trace to file
                     sacz.write("%s/%s.%s.%s.%s.sac" % (sac_dir, event_date, net, sta, cha))
                     # Delete miniseed files if miniseed convert to sac successfully
                     if delete_mseed and os.path.exists('%s/%s.%s.%s.%s.sac' % (sac_dir, event_date, net, sta, cha)):
-                        os.system('rm %s/*%s.%s.%s.mseed' % (mseed_dir, net, sta, cha))
-                else:
-                    unremove_file = os.path.join(sac_dir, 'unremove_sac')
-                    if not os.path.exists(unremove_file):
-                        os.mkdir(unremove_file)
-                    sacz.write("%s/%s.%s.%s.%s.sac" % (unremove_file, event_date, net, sta, cha))
-                    # Delete miniseed files if miniseed convert to sac successfully
-                    if delete_mseed and os.path.exists('%s/%s.%s.%s.%s.sac' % (unremove_file, event_date, net, sta, cha)):
-                        os.system('rm %s/*%s.%s.%s.mseed' % (mseed_dir, net, sta, cha))
+                        os.system('rm %s/*%s.%s.%s.mseed' %(mseed_dir, net, sta, cha))
+                except Exception as e:
+                    print("!!!%s/%s.%s.%s.%s.sac read inventory failed!!!" % (sac_dir, event_date, net, sta, cha))
+                    continue
         try:
             os.rmdir(mseed_dir)
             print(f"The folder:'{mseed_dir}' has been deleted successfully!")
@@ -271,11 +269,12 @@ def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat,
     except:
         pass
 
+
+
 if __name__ == '__main__':
     '''
     Author: Tianyu Cui
-    Date: 2023.09.16
-
+    Date: 2023.10.20
     arrayname: "IU" or "II" or "TA" or "TW" or "IC" or "IU,II,TA,TW,IC" or "*"
     station_name: "ANMO" or "TA01" or "ANMO,TA01" or "*"
     channel: channels (default: ["BHZ", "HHZ", "SHZ", "EHZ"])
@@ -295,8 +294,10 @@ if __name__ == '__main__':
     limit_distance: if True, add distance restriction to the Rectangular domain (default: False)
                     min_dis: min distance in degree (default: 0)
                     max_dis: max distance in degree (default: 180)
+    remove_response: if True, remove instrument response (default: True)
     delete_mseed: if True, delete corresponding miniseed data if miniseed convert to sac successfully (default: True)
     '''
     Massdownload_data(array_name="*", station_name="*", domain_type=1, sta_range=[0, 60, 40, 180], evt_range=[-10, 60, 40, 220],
-                        ref_lat=0, ref_lon=0, evt_mag_range=[5.5, 10], evt_min_dep=50, channel=["BHZ", "HHZ", "SHZ", "EHZ"], wave_len=1800,
-                        startdate="2015-01-01 00:00:00", enddate="2015-01-10 21:59:59", max_dis=15, limit_distance=True, delete_mseed=True)
+                      ref_lat=0, ref_lon=0, evt_mag_range=[5.5, 10], evt_min_dep=50, channel=["BHZ", "HHZ", "SHZ", "EHZ"], wave_len=1800,
+                      startdate="2015-01-01 00:00:00", enddate="2015-01-10 21:59:59", max_dis=15, limit_distance=True, remove_response=True, 
+                      delete_mseed=True)

@@ -154,13 +154,15 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
 
         # Module 3: miniseed2sac: convert miniseed to sac and remove instrument response
         # any mseed file in the event folder
-        mseed_files_exist = any(file.endswith(".mseed") for file in os.listdir(
-            os.path.join(waveform_mseed_dir, event_date)))
-        if mseed_files_exist:
-            miniseed2sac(waveform_mseed_dir, event_date, waveform_station_dir, waveform_sac_dir, event_lat,
-                         event_lon, event_dep, event_mag, delete_mseed=delete_mseed, remove_response=remove_response)
-        else:
+        if not os.path.exists(waveform_mseed_dir) or not os.path.exists(os.path.join(waveform_mseed_dir, event_date)):
             print("\n!!!No miniseed waveform data for event-%s!!!\n" % event_date)
+        else:
+            mseed_files_exist = any(file.endswith(".mseed") for file in os.listdir(os.path.join(waveform_mseed_dir, event_date)))
+            if mseed_files_exist:
+                miniseed2sac(waveform_mseed_dir, event_date, waveform_station_dir, waveform_sac_dir, event_lat,
+                            event_lon, event_dep, event_mag, delete_mseed=delete_mseed, remove_response=remove_response)
+            else:
+                print("\n!!!No miniseed waveform data for event-%s!!!\n" % event_date)
 
 
 '''

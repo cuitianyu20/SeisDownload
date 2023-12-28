@@ -28,8 +28,8 @@ Author: Tianyu Cui
 E-mail: tycuicn@gmail.com
 Date: 2023.10.04
 '''
-def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_range, ref_lat, ref_lon, evt_mag_range, evt_min_dep, wave_len, 
-                      channel, startdate, enddate, min_dis=0, max_dis=180, limit_distance=False, delete_mseed=True, remove_response=True):
+def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_range, evt_mag_range, evt_min_dep, ref_lat, ref_lon, wave_len,
+                      channel, startdate, enddate, min_dis=0, max_dis=180, event_center=False, limit_distance=False, delete_mseed=True, remove_response=False):
     # Module 1: Get event catalog from IRIS
     evt_minlat = evt_range[0]
     evt_maxlat = evt_range[1]
@@ -100,9 +100,14 @@ def Massdownload_data(array_name, station_name, domain_type, sta_range, evt_rang
               event.origins[0].latitude, event.magnitudes[0].mag)
         # Station data selection for different domain types.
         if domain_type == 0:
-            # Circular domain around the epicenter.
-            domain = CircularDomain(latitude=ref_lat, longitude=ref_lon,
-                                    minradius=sta_range[0], maxradius=sta_range[1])
+            if event_center:
+                # Circular domain around the epicenter.
+                domain = CircularDomain(latitude=event_lat, longitude=event_lon,
+                                        minradius=sta_range[0], maxradius=sta_range[1])
+            else:
+                # Circular domain around the epicenter.
+                domain = CircularDomain(latitude=ref_lat, longitude=ref_lon,
+                                        minradius=sta_range[0], maxradius=sta_range[1])
         elif domain_type == 1:
             # Rectangular domain around the epicenter.
             domain = RectangularDomain(minlatitude=sta_range[0], maxlatitude=sta_range[1],
@@ -276,7 +281,7 @@ def miniseed2sac(waveform_mseed, event_date, station_dir, waveform_sac, eve_lat,
 if __name__ == '__main__':
     '''
     Author: Tianyu Cui
-    Date: 2023.10.20
+    Date: 2023.09.16
     arrayname: "IU" or "II" or "TA" or "TW" or "IC" or "IU,II,TA,TW,IC" or "*"
     station_name: "ANMO" or "TA01" or "ANMO,TA01" or "*"
     channel: channels (default: ["BHZ", "HHZ", "SHZ", "EHZ"])
@@ -284,22 +289,28 @@ if __name__ == '__main__':
         domain type:0 (CircularDomain) sta_range = [minradius, maxradius] in degree 
                                        mid points: [ref_lat, ref_lon] in degree
         domain type:1 (RectangularDomain) sta_range = [sta_lat_min, sta_lat_max, sta_lon_min, sta_lon_max] in degree
-               if limit_distance=True, add distance restriction to the Rectangular domain
-              (RestrictionDomain) [min_dis, max_dis] in degree 
+                       if limit_distance=True, add distance restriction to the Rectangular domain
+                      (RestrictionDomain) [min_dis, max_dis] in degree 
         domain type:2 (GlobalDomain) []
     evt_range: [evt_lat_min, evt_lat_max, evt_lon_min, evt_lon_max] in degree (lon: 0 degree ~ 360 degree)
     evt_mag_range: [evt_mag_min, evt_mag_max]
     evt_min_dep: min event depth in km
+    ref_lat: reference latitude in degree
+    ref_lon: reference longitude in degree
     wave_len: downloaded waveform length in seconds
     startdate: earthquake catalog start date
     enddate: earthquake catalog end date
+    min_dis: min distance in degree (default: 0)
+    max_dis: max distance in degree (default: 180)
+    event_center: if True, use event center as reference point (default: False)
     limit_distance: if True, add distance restriction to the Rectangular domain (default: False)
                     min_dis: min distance in degree (default: 0)
                     max_dis: max distance in degree (default: 180)
-    remove_response: if True, remove instrument response (default: True)
+    remove_response: if True, remove instrument response (default: False)
     delete_mseed: if True, delete corresponding miniseed data if miniseed convert to sac successfully (default: True)
     '''
-    Massdownload_data(array_name="*", station_name="*", domain_type=1, sta_range=[0, 60, 40, 180], evt_range=[-10, 60, 40, 220],
-                      ref_lat=0, ref_lon=0, evt_mag_range=[5.5, 10], evt_min_dep=50, channel=["BHZ", "HHZ", "SHZ", "EHZ"], wave_len=1800,
-                      startdate="2015-01-01 00:00:00", enddate="2015-01-10 21:59:59", max_dis=15, limit_distance=True, remove_response=True, 
-                      delete_mseed=True)
+    Massdownload_data(array_name="1A", station_name="NE*", domain_type=0, sta_range=[30, 95], evt_range=[-89, 89, 0, 360],
+                      ref_lat=43.062, ref_lon=120.4790, evt_mag_range=[5.5, 10], evt_min_dep=0, channel=["*Z",], wave_len=600,
+                      startdate="2007-09-01 00:00:00", enddate="2008-10-01 23:59:59", min_dis=30, max_dis=95, event_center=True,
+                      limit_distance=False, remove_response=False, delete_mseed=True)
+

@@ -12,8 +12,8 @@ Functions:star2::
 ***
 ## Dependencies
 #### Tested well:
-1. Obspy1.4.0 
-2. Numpy 1.25.0,Pandas 1.4.2
+1. Obspy 1.4.0 
+2. Numpy 1.25.0, Pandas 1.4.2
 ***
 ## 
 #### Details in codes

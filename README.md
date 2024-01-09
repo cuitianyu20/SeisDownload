@@ -4,7 +4,7 @@
 
 
 Auto-download mass seismic event data using Obspy.
-Functions:star2::
+Functions:
 1. Choose different event domain (circural, rectangular and event catalog file domain), station domain (circural, rectangular and global domain).
 2. Convert Miniseed format file to SAC format file
 3. Automatically remove instrument responce and conventional process (detrend, demean and taper).

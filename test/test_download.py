@@ -15,7 +15,7 @@ evt_domain_type = 'circ'
 # 1. [ minlat, maxlat, minlon, maxlon ] for rect domain
 # 2. [ center_lat, center_lon, minradius, maxradius ] for circ domain
 # 3. arbitrary values for catalog domain
-evt_domain_range = [0, 20, 0, 30]   
+evt_domain_range = [0, 20, 0, 70]   
 ### station domain setting (circ, rect, globe domain) ###
 sta_domain_type = 'circ'
 # 1. [ center_lat, center_lon, minradius, maxradius ] for circ domain, 

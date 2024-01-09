@@ -10,13 +10,13 @@ Functions:star2::
 3. Automatically remove instrument responce and conventional process (detrend, demean and taper).
 
 ***
-## Dependencies
-#### Tested well:
+## dependencies
+#### test well:
 1. Obspy 1.4.0 
 2. Numpy 1.25.0, Pandas 1.4.2
 ***
 ## 
-#### Details in codes
+#### detailed parameter setting in codes
 ```Python
 
     MassDownload_data: download waveform data for different domains.
@@ -59,6 +59,6 @@ Functions:star2::
     3. station_inv: directory of station inventory (stationxml format)
 ```
 ***
-## Example
+## an example
 see [test/test_download.py](test/test_download.py)
 

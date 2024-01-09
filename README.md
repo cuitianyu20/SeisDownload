@@ -28,16 +28,16 @@ Functions:star2::
     param channel: channels (list)
     param wave_len: downloaded waveform length in seconds
     param evt_domain_type: event domain type (1.circ: circular domain; 
-                                            2.rect: rectangular domain; 
-                                            3.catalog: read event catalog file (csv or other obspy format))
+                                              2.rect: rectangular domain; 
+                                              3.catalog: read event catalog file (csv or other obspy format))
     param evt_domain_range: event domain range (circular domain: [latitude, longitude, minradius, maxradius] in degree;
                                                 rectangular domain: [minlatitude, maxlatitude, minlongitude, maxlongitude] in degree)
     param sta_domain_type: station domain type (1.circ: circular domain; 
                                                 2.rect: rectangular domain; 
                                                 3.globe: global domain)
     param sta_domain_range: station domain range (circular domain: [latitude, longitude, minradius, maxradius] in degree;
-                                                    rectangular domain: [minlatitude, maxlatitude, minlongitude, maxlongitude] in degree;
-                                                    global domain: [])
+                                                  rectangular domain: [minlatitude, maxlatitude, minlongitude, maxlongitude] in degree;
+                                                  global domain: [])
     param evt_min_dep: min event depth in km
     param evt_max_dep: max event depth in km
     param evt_min_mag: min event magnitude

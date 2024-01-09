@@ -81,6 +81,9 @@ def massdownload_data(starttime, endtime, channel, wave_len, evt_domain_type, ev
             events_cat = catcsv2xml(event_catalog, save_path='.')
         else:
             events_cat = read_events(event_catalog)
+        # save fig
+        events_cat.plot(projection="global", resolution="h", show=False,
+                    outfile="events_map.png", method='cartopy')
     else:
         raise SystemExit('Event domain type error!')
     print('Total number of events: %s' % len(events_cat))

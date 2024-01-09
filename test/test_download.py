@@ -31,7 +31,7 @@ evt_max_dep = None          # min event depth
 evt_min_mag = 5.0           # min event magnitude
 evt_max_mag = None          # max event magnitude
 ### event catalog file setting  ###
-event_catalog = "event_with_PKiKP.csv"
+event_catalog = "src/example_event_catalog.csv"
 ### station catalog setting (array, station name, distance limit) ###
 array_name = "*"            # network name
 station_name = "*"          # station name
